@@ -44,7 +44,11 @@ def persist_analysis(text, source="manual"):
 
         print("STEP 4: Generating recommendations", flush=True)
         recommendations = generate_recommendations(text, issues, sentiment)
-        analysis_engine = {"source": "local-fallback", "model": "distilbert-or-rules"}
+        analysis_engine = {
+            "source": "local-fallback",
+            "model": "dynamic-ux-playbooks-v2",
+            "openai_status": openai_analysis_status(),
+        }
 
     print("STEP 5: Writing to database", flush=True)
     with get_db() as conn:
