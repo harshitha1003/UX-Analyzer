@@ -64,7 +64,13 @@ For full spaCy lemmatization, install the English model:
 python -m spacy download en_core_web_sm
 ```
 
-If the Hugging Face model is unavailable, the backend automatically uses the included lexical sentiment fallback so the app remains demo-ready.
+By default, sentiment analysis tries the Hugging Face model `distilbert-base-uncased-finetuned-sst-2-english` first and falls back to the included lexical model only when the transformer cannot load. You can override the model with:
+
+```bash
+AI_UX_SENTIMENT_MODEL=distilbert-base-uncased-finetuned-sst-2-english
+```
+
+Common typo variants such as `distillBERT-base-uncased-finetuned-sst-2-emglish` are normalized to the correct DistilBERT model id.
 
 ## Deployment Notes
 
@@ -75,7 +81,8 @@ Use the `backend` directory as the service root.
 - Build command: `pip install -r requirements.txt`
 - Start command: `gunicorn app:app`
 - Health check path: `/health`
-- `AI_UX_USE_TRANSFORMER_SENTIMENT=false`
+- `AI_UX_USE_TRANSFORMER_SENTIMENT=true`
+- `AI_UX_SENTIMENT_MODEL=distilbert-base-uncased-finetuned-sst-2-english`
 
 SQLite works out of the box, but Render's normal filesystem is ephemeral. For persistent data, attach a Render disk and set:
 

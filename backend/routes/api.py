@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, Response
 
 from database.db import DATABASE_PATH, get_db, row_to_dict, rows_to_dicts
 from services.preprocessing import preprocess_text
-from services.sentiment import analyze_sentiment
+from services.sentiment import analyze_sentiment, sentiment_engine_status
 from services.ux_issue_detector import detect_ux_issues
 from services.recommendation_engine import generate_recommendations
 from services.reporting import rows_to_csv
@@ -213,7 +213,13 @@ def health():
     with get_db() as conn:
         conn.execute("SELECT 1")
         feedback_count = conn.execute("SELECT COUNT(*) AS count FROM feedback").fetchone()["count"]
-    return jsonify({"status": "ok", "database": "ok", "feedback_count": feedback_count, "db_path": DATABASE_PATH})
+    return jsonify({
+        "status": "ok",
+        "database": "ok",
+        "feedback_count": feedback_count,
+        "db_path": DATABASE_PATH,
+        "sentiment_engine": sentiment_engine_status(),
+    })
 
 
 @api.delete("/dashboard/clear")

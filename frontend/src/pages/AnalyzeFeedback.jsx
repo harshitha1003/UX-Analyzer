@@ -56,6 +56,9 @@ export default function AnalyzeFeedback() {
               <p className="mt-1 text-2xl font-bold">
                 {result.sentiment.sentiment} <span className="text-base text-slate-500">({result.sentiment.confidence})</span>
               </p>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                {result.sentiment.source === "transformer" ? "AI model" : "Fallback"}: {result.sentiment.model}
+              </p>
             </div>
 
             <div>
