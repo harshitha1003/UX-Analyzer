@@ -1,10 +1,28 @@
 RECOMMENDATIONS = {
-    "Navigation": "Simplify menu hierarchy, clarify navigation labels, and add breadcrumbs or visible back paths.",
-    "Performance": "Optimize API response times, compress large assets, cache frequent requests, and use loading indicators.",
-    "UI Design": "Improve visual hierarchy, make primary actions clearer, and standardize spacing, labels, and button states.",
-    "Accessibility": "Increase contrast, support keyboard navigation, add accessible labels, and test with screen readers.",
-    "Bugs": "Prioritize reproducible defects, add regression tests, and expose clear recovery messages when failures occur.",
-    "Usability": "Reduce task steps, improve onboarding cues, and validate the flow with usability tests.",
+    "Navigation": [
+        "Audit the reported journey, reduce unnecessary path choices, and rename confusing navigation labels using user language.",
+        "Add stronger wayfinding cues such as visible back paths, current-page state, breadcrumbs, or clearer search entry points.",
+    ],
+    "Performance": [
+        "Measure the affected flow with real-device performance traces, then optimize slow API calls, heavy assets, and blocking UI states.",
+        "Add skeleton or progress states where waits are unavoidable so users understand the app is still working.",
+    ],
+    "UI Design": [
+        "Tighten the visual hierarchy around the affected controls, make primary actions more prominent, and standardize spacing and labels.",
+        "Run a quick design review for contrast, density, alignment, and affordance issues in the mentioned screen.",
+    ],
+    "Accessibility": [
+        "Test the affected experience with keyboard and screen-reader flows, then fix labels, focus order, contrast, and text sizing.",
+        "Add accessibility checks to the release process for this area so similar regressions are caught earlier.",
+    ],
+    "Bugs": [
+        "Create a reproducible defect ticket from this feedback, add a regression test, and improve the recovery message for users.",
+        "Instrument the affected action with error logging so the team can identify frequency, device patterns, and failed states.",
+    ],
+    "Usability": [
+        "Map the user's task step by step, remove avoidable decisions, and add inline guidance where users hesitate.",
+        "Validate the revised flow with a small usability test focused on completion rate and time to success.",
+    ],
 }
 
 
@@ -21,16 +39,28 @@ def generate_recommendations(text, issues, sentiment_result):
         return [
             {
                 "category": "General",
-                "recommendation": "Review this feedback during the next UX triage session and look for repeated patterns.",
+                "recommendation": "Cluster this feedback with similar comments, identify the user's goal, and review whether a small UX improvement could reduce future friction.",
                 "priority": "Low",
+                "source": "local-fallback",
+                "model": "adaptive-rules",
             }
         ]
     sentiment = sentiment_result.get("sentiment", "Neutral")
-    return [
-        {
-            "category": issue["category"],
-            "recommendation": RECOMMENDATIONS.get(issue["category"], RECOMMENDATIONS["Usability"]),
+    recommendations = []
+    for issue in issues:
+        category = issue["category"]
+        templates = RECOMMENDATIONS.get(category, RECOMMENDATIONS["Usability"])
+        template = templates[0] if sentiment == "Negative" or issue["score"] >= 0.7 else templates[-1]
+        evidence = issue.get("evidence")
+        if evidence:
+            recommendation = f"{template} Evidence to inspect: {evidence}."
+        else:
+            recommendation = template
+        recommendations.append({
+            "category": category,
+            "recommendation": recommendation,
             "priority": priority_for(sentiment, issue["score"]),
-        }
-        for issue in issues
-    ]
+            "source": "local-fallback",
+            "model": "adaptive-rules",
+        })
+    return recommendations

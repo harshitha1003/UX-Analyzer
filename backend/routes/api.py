@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, request, Response
 
 from database.db import DATABASE_PATH, get_db, row_to_dict, rows_to_dicts
 from services.preprocessing import preprocess_text
+from services.openai_analysis import analyze_feedback_with_openai, openai_analysis_status
 from services.sentiment import analyze_sentiment, sentiment_engine_status
 from services.ux_issue_detector import detect_ux_issues
 from services.recommendation_engine import generate_recommendations
@@ -26,14 +27,24 @@ def persist_analysis(text, source="manual"):
     print("STEP 1: Starting preprocessing", flush=True)
     processed = preprocess_text(text)
 
-    print("STEP 2: Starting sentiment", flush=True)
-    sentiment = analyze_sentiment(text)
+    print("STEP 2: Starting AI analysis", flush=True)
+    ai_analysis = analyze_feedback_with_openai(text, processed["processed_text"])
 
-    print("STEP 3: Detecting issues", flush=True)
-    issues = detect_ux_issues(text, processed["processed_text"])
+    if ai_analysis:
+        sentiment = ai_analysis["sentiment"]
+        issues = ai_analysis["issues"]
+        recommendations = ai_analysis["recommendations"]
+        analysis_engine = ai_analysis["analysis_engine"]
+    else:
+        print("STEP 2B: Falling back to local sentiment", flush=True)
+        sentiment = analyze_sentiment(text)
 
-    print("STEP 4: Generating recommendations", flush=True)
-    recommendations = generate_recommendations(text, issues, sentiment)
+        print("STEP 3: Detecting issues", flush=True)
+        issues = detect_ux_issues(text, processed["processed_text"])
+
+        print("STEP 4: Generating recommendations", flush=True)
+        recommendations = generate_recommendations(text, issues, sentiment)
+        analysis_engine = {"source": "local-fallback", "model": "distilbert-or-rules"}
 
     print("STEP 5: Writing to database", flush=True)
     with get_db() as conn:
@@ -69,6 +80,7 @@ def persist_analysis(text, source="manual"):
         "sentiment": sentiment,
         "issues": issues,
         "recommendations": recommendations,
+        "analysis_engine": analysis_engine,
     }
 
 
@@ -218,6 +230,7 @@ def health():
         "database": "ok",
         "feedback_count": feedback_count,
         "db_path": DATABASE_PATH,
+        "openai_analysis": openai_analysis_status(),
         "sentiment_engine": sentiment_engine_status(),
     })
 

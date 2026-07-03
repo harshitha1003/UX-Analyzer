@@ -57,8 +57,17 @@ export default function AnalyzeFeedback() {
                 {result.sentiment.sentiment} <span className="text-base text-slate-500">({result.sentiment.confidence})</span>
               </p>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                {result.sentiment.source === "transformer" ? "AI model" : "Fallback"}: {result.sentiment.model}
+                {result.sentiment.source === "openai"
+                  ? "OpenAI model"
+                  : result.sentiment.source === "transformer"
+                    ? "Transformer model"
+                    : "Fallback"}: {result.sentiment.model}
               </p>
+              {result.analysis_engine && (
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Analysis engine: {result.analysis_engine.source} · {result.analysis_engine.model}
+                </p>
+              )}
             </div>
 
             <div>

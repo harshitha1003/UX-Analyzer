@@ -22,22 +22,28 @@ Response:
   "feedback_id": 1,
   "sentiment": {
     "sentiment": "Negative",
-    "confidence": 0.92
+    "confidence": 0.92,
+    "source": "openai",
+    "model": "gpt-4.1-mini"
   },
   "issues": [
     {
-      "category": "Navigation",
-      "score": 0.74,
-      "evidence": "navigation, confusing"
+      "category": "Checkout Flow",
+      "score": 0.86,
+      "evidence": "payment failed without explaining why"
     }
   ],
   "recommendations": [
     {
-      "category": "Navigation",
-      "recommendation": "Simplify menu hierarchy, clarify navigation labels, and add breadcrumbs or visible back paths.",
-      "priority": "Medium"
+      "category": "Checkout Flow",
+      "recommendation": "Show a specific payment error, keep the user's form data intact, and offer a retry path with alternate payment options.",
+      "priority": "High"
     }
-  ]
+  ],
+  "analysis_engine": {
+    "source": "openai",
+    "model": "gpt-4.1-mini"
+  }
 }
 ```
 
@@ -78,4 +84,4 @@ Downloads analyzed results as `ux-feedback-results.csv`.
 
 ## GET /health
 
-Returns service health.
+Returns service health, OpenAI analysis availability, and local sentiment engine status.
