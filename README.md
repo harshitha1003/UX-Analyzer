@@ -72,9 +72,11 @@ AI_UX_USE_OPENAI_ANALYSIS=true
 AI_UX_OPENAI_MODEL=gpt-4.1-mini
 ```
 
-If OpenAI is not configured, sentiment analysis tries the Hugging Face model `distilbert-base-uncased-finetuned-sst-2-english` and falls back to the included lexical model only when the transformer cannot load. You can override the transformer model with:
+If OpenAI is not configured, the backend uses the lightweight local fallback by default so Render deployments stay responsive. You can optionally enable Hugging Face sentiment analysis with:
 
 ```bash
+pip install -r requirements-ml.txt
+AI_UX_USE_TRANSFORMER_SENTIMENT=true
 AI_UX_SENTIMENT_MODEL=distilbert-base-uncased-finetuned-sst-2-english
 ```
 
@@ -92,7 +94,7 @@ Use the `backend` directory as the service root.
 - `OPENAI_API_KEY=your_api_key`
 - `AI_UX_USE_OPENAI_ANALYSIS=true`
 - `AI_UX_OPENAI_MODEL=gpt-4.1-mini`
-- `AI_UX_USE_TRANSFORMER_SENTIMENT=true`
+- `AI_UX_USE_TRANSFORMER_SENTIMENT=false`
 - `AI_UX_SENTIMENT_MODEL=distilbert-base-uncased-finetuned-sst-2-english`
 
 SQLite works out of the box, but Render's normal filesystem is ephemeral. For persistent data, attach a Render disk and set:
@@ -120,10 +122,10 @@ VITE_API_URL=https://your-render-service.onrender.com
 
 If `VITE_API_URL` is not set, production builds use `/api` as a fallback for same-domain proxy deployments. Local development still uses `http://localhost:5000`.
 
-This repository includes `frontend/.env.production` pointing to:
+This repository includes `frontend/.env.production` pointing to your Render backend:
 
 ```bash
-VITE_API_URL=https://ai-ux-backend.onrender.com
+VITE_API_URL=https://ux-analyzer-backend-rcqo.onrender.com
 ```
 
 ## Frontend Setup

@@ -40,7 +40,7 @@ def _load_classifier():
     global _classifier, _classifier_error
     if _classifier is not None:
         return _classifier
-    if not _env_enabled("AI_UX_USE_TRANSFORMER_SENTIMENT", default=True):
+    if not _env_enabled("AI_UX_USE_TRANSFORMER_SENTIMENT", default=False):
         _classifier = False
         return _classifier
     try:
@@ -100,17 +100,22 @@ def analyze_sentiment(text):
 
 
 def sentiment_engine_status():
-    classifier = _load_classifier()
-    if classifier:
+    if _classifier:
         return {
             "source": "transformer",
             "model": _sentiment_model_name(),
             "available": True,
         }
+    transformer_enabled = _env_enabled("AI_UX_USE_TRANSFORMER_SENTIMENT", default=False)
     return {
         "source": "fallback",
         "model": "lexical-rules",
         "configured_model": _sentiment_model_name(),
-        "available": False,
-        "message": _classifier_error or "Transformer sentiment is disabled.",
+        "available": True,
+        "transformer_enabled": transformer_enabled,
+        "message": _classifier_error or (
+            "Transformer sentiment is enabled but has not been loaded yet."
+            if transformer_enabled else
+            "Transformer sentiment is disabled; lexical fallback is active."
+        ),
     }
